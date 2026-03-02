@@ -1,5 +1,6 @@
 import { MessageCircle } from "lucide-react"
 import Image from "next/image"
+import { buildWhatsAppContactUrl } from "@/lib/products"
 
 export function SiteFooter() {
   return (
@@ -63,7 +64,7 @@ export function SiteFooter() {
             </p>
 
             <a
-              href="https://wa.me/5491124848417?text=Hola!%20Quiero%20consultar%20por%20productos%20Kelly%20Store"
+              href={buildWhatsAppContactUrl()}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"

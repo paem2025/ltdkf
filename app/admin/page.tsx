@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { getProducts, addProduct, updateProduct, deleteProduct, formatPrice } from "@/lib/products"
+import { DEFAULT_PRODUCTS, getProducts, addProduct, updateProduct, deleteProduct, formatPrice } from "@/lib/products"
 import { Product } from "@/lib/types"
 import { ProductForm } from "@/components/admin/product-form"
 import { Plus, Pencil, Trash2, ArrowLeft, Package } from "lucide-react"
 
 export default function AdminPage() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Product | undefined>()
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -78,6 +78,10 @@ export default function AdminPage() {
 
       {/* Product list */}
       <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Este panel guarda cambios solo en este navegador. Para cambios compartidos en produccion necesitas un backend o CMS.
+        </div>
+
         <div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             {products.length} {products.length === 1 ? "producto" : "productos"} en el catalogo

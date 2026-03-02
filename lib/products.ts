@@ -2,7 +2,9 @@ import { Product } from "./types"
 
 const STORAGE_KEY = "essen-products"
 
-const defaultProducts: Product[] = [
+export const WHATSAPP_NUMBER = "5491124848417"
+
+export const DEFAULT_PRODUCTS: Product[] = [
   {
     id: "1",
     name: "Olla Cacerola N20",
@@ -65,14 +67,34 @@ const defaultProducts: Product[] = [
   },
 ]
 
-export function getProducts(): Product[] {
-  if (typeof window === "undefined") return defaultProducts
+function cloneProducts(products: Product[]): Product[] {
+  return products.map((product) => ({ ...product }))
+}
+
+function readStoredProducts(): Product[] | null {
+  if (typeof window === "undefined") return null
+
   const stored = localStorage.getItem(STORAGE_KEY)
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProducts))
-    return defaultProducts
+  if (!stored) return null
+
+  try {
+    const parsed = JSON.parse(stored)
+    return Array.isArray(parsed) ? parsed : null
+  } catch {
+    return null
   }
-  return JSON.parse(stored)
+}
+
+export function getProducts(): Product[] {
+  if (typeof window === "undefined") return cloneProducts(DEFAULT_PRODUCTS)
+
+  const storedProducts = readStoredProducts()
+  if (storedProducts) {
+    return storedProducts
+  }
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS))
+  return cloneProducts(DEFAULT_PRODUCTS)
 }
 
 export function saveProducts(products: Product[]) {
@@ -117,9 +139,16 @@ export function formatPrice(price: number): string {
   }).format(price)
 }
 
-export function buildWhatsAppUrl(productName: string, phoneNumber = "5491100000000"): string {
+export function buildWhatsAppUrl(productName: string, phoneNumber = WHATSAPP_NUMBER): string {
   const message = encodeURIComponent(
     `Hola! Me interesa el producto: ${productName}. Me podrias dar mas info?`
   )
   return `https://wa.me/${phoneNumber}?text=${message}`
+}
+
+export function buildWhatsAppContactUrl(
+  message = "Hola! Quiero consultar por productos Kelly Store.",
+  phoneNumber = WHATSAPP_NUMBER,
+): string {
+  return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
 }

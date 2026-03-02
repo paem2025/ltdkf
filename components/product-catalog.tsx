@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { getProducts } from "@/lib/products"
+import { DEFAULT_PRODUCTS, getProducts } from "@/lib/products"
 import { Product } from "@/lib/types"
 import { ProductCard } from "./product-card"
 import { CategoryFilter } from "./category-filter"
@@ -9,7 +9,7 @@ import { SearchBar } from "./search-bar"
 import { PackageOpen } from "lucide-react"
 
 export function ProductCatalog() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS)
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("Todos")
 

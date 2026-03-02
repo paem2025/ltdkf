@@ -14,14 +14,16 @@ export function SiteHeader() {
       <div className="mx-auto max-w-7xl flex items-center justify-between px-4 py-4 lg:px-8">
         
         {/* LOGO */}
-   <Image 
-  src="/images/logo.jpg"
-  alt="Kelly Store"
-  width={120}
-  height={120}
-  className="object-contain transition duration-300 hover:scale-105 hover:opacity-90"
-  priority
-/>
+        <Link href="/" aria-label="Ir al inicio">
+          <Image
+            src="/images/logo.jpg"
+            alt="Kelly Store"
+            width={120}
+            height={120}
+            className="object-contain transition duration-300 hover:scale-105 hover:opacity-90"
+            priority
+          />
+        </Link>
 
         {/* NAV DESKTOP */}
         <nav className="hidden md:flex items-center gap-8">
@@ -34,12 +36,6 @@ export function SiteHeader() {
           <a href="#contacto" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Contacto
           </a>
-          <Link
-            href="/admin"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Admin
-          </Link>
         </nav>
 
         {/* BOTON MOBILE */}
@@ -64,9 +60,6 @@ export function SiteHeader() {
           <a href="#contacto" className="text-sm font-medium text-muted-foreground hover:text-foreground">
             Contacto
           </a>
-          <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-            Admin
-          </Link>
         </nav>
       )}
     </header>
