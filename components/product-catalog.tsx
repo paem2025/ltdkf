@@ -1,21 +1,57 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { DEFAULT_PRODUCTS, getProducts } from "@/lib/products"
-import { Product } from "@/lib/types"
+import { LandingSection, Product } from "@/lib/types"
 import { ProductCard } from "./product-card"
 import { CategoryFilter } from "./category-filter"
 import { SearchBar } from "./search-bar"
 import { PackageOpen } from "lucide-react"
 
-export function ProductCatalog() {
-  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS)
+interface ProductCatalogProps {
+  heading?: string
+  description?: string
+  productsOverride?: Product[]
+  whatsappNumber?: string
+  productInquiryTemplate?: string
+  adminMode?: boolean
+  onEditSection?: (section: LandingSection) => void
+}
+
+export function ProductCatalog({
+  heading = "Nuestro catalogo",
+  description = "Explora todos nuestros productos y encontra lo que necesitas para tu cocina.",
+  productsOverride,
+  whatsappNumber,
+  productInquiryTemplate,
+  adminMode = false,
+  onEditSection,
+}: ProductCatalogProps) {
+  const [products, setProducts] = useState<Product[]>(productsOverride ?? DEFAULT_PRODUCTS)
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("Todos")
 
   useEffect(() => {
-    setProducts(getProducts())
-  }, [])
+    let mounted = true
+
+    if (productsOverride) {
+      setProducts(productsOverride)
+      return () => {
+        mounted = false
+      }
+    }
+
+    void (async () => {
+      const loaded = await getProducts()
+      if (mounted) {
+        setProducts(loaded)
+      }
+    })()
+
+    return () => {
+      mounted = false
+    }
+  }, [productsOverride])
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -29,31 +65,55 @@ export function ProductCatalog() {
   }, [products, search, category])
 
   return (
-    <section id="catalogo" className="mx-auto max-w-7xl px-4 py-16 lg:px-8 lg:py-24">
+    <section id="catalogo" className="relative mx-auto max-w-7xl px-4 py-16 lg:px-8 lg:py-24">
+      {adminMode && onEditSection && (
+        <div className="absolute right-4 top-6 z-20 flex gap-2">
+          <button
+            type="button"
+            onClick={() => onEditSection("catalogo")}
+            className="rounded-lg border border-border bg-card/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm hover:bg-muted transition-colors"
+          >
+            Editar textos
+          </button>
+          <button
+            type="button"
+            onClick={() => onEditSection("productos")}
+            className="rounded-lg border border-border bg-card/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm hover:bg-muted transition-colors"
+          >
+            Editar productos
+          </button>
+        </div>
+      )}
+
       <div className="mb-12 text-center">
         <h2 className="text-3xl font-serif text-foreground lg:text-4xl text-balance">
-          Nuestro catalogo
+          {heading}
         </h2>
         <p className="mt-3 text-muted-foreground leading-relaxed">
-          Explora todos nuestros productos y encontra lo que necesitas para tu cocina.
+          {description}
         </p>
       </div>
 
-      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between mb-10">
+      <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <CategoryFilter selected={category} onSelect={setCategory} />
         <SearchBar value={search} onChange={setSearch} />
       </div>
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-          <PackageOpen className="h-16 w-16 mb-4 opacity-40" />
+          <PackageOpen className="mb-4 h-16 w-16 opacity-40" />
           <p className="text-lg font-medium">No se encontraron productos</p>
-          <p className="text-sm mt-1">Intenta con otra busqueda o categoria.</p>
+          <p className="mt-1 text-sm">Intenta con otra busqueda o categoria.</p>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              whatsappNumber={whatsappNumber}
+              whatsappMessageTemplate={productInquiryTemplate}
+            />
           ))}
         </div>
       )}

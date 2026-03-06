@@ -1,6 +1,5 @@
 import { Product } from "./types"
-
-const STORAGE_KEY = "essen-products"
+import { ApiError, apiRequest } from "./api-client"
 
 export const WHATSAPP_NUMBER = "5491124848417"
 
@@ -71,64 +70,89 @@ function cloneProducts(products: Product[]): Product[] {
   return products.map((product) => ({ ...product }))
 }
 
-function readStoredProducts(): Product[] | null {
-  if (typeof window === "undefined") return null
+interface ProductApiRecord {
+  id: string
+  name: string
+  price: number
+  description: string
+  category: string
+  image: string
+  featured?: boolean
+  sortOrder?: number
+  createdAt: string
+  updatedAt?: string
+}
 
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (!stored) return null
+function toProductApiPayload(product: Omit<Product, "id" | "createdAt">) {
+  return {
+    name: product.name,
+    price: product.price,
+    description: product.description,
+    category: product.category,
+    image: product.image,
+    featured: Boolean(product.featured),
+    sortOrder: 0,
+  }
+}
 
+function fromApi(record: ProductApiRecord): Product {
+  return {
+    id: record.id,
+    name: record.name,
+    price: record.price,
+    description: record.description,
+    category: record.category,
+    image: record.image,
+    featured: Boolean(record.featured),
+    createdAt: record.createdAt,
+  }
+}
+
+export async function getProducts(): Promise<Product[]> {
   try {
-    const parsed = JSON.parse(stored)
-    return Array.isArray(parsed) ? parsed : null
-  } catch {
-    return null
+    const rows = await apiRequest<ProductApiRecord[]>("/api/products")
+    return rows.map(fromApi)
+  } catch (error) {
+    console.error("No se pudieron cargar productos desde backend:", error)
+    return cloneProducts(DEFAULT_PRODUCTS)
   }
 }
 
-export function getProducts(): Product[] {
-  if (typeof window === "undefined") return cloneProducts(DEFAULT_PRODUCTS)
+export async function addProduct(product: Omit<Product, "id" | "createdAt">): Promise<Product> {
+  const created = await apiRequest<ProductApiRecord>("/api/products", {
+    method: "POST",
+    body: JSON.stringify(toProductApiPayload(product)),
+  })
 
-  const storedProducts = readStoredProducts()
-  if (storedProducts) {
-    return storedProducts
+  return fromApi(created)
+}
+
+export async function updateProduct(id: string, updates: Omit<Product, "id" | "createdAt">): Promise<Product | null> {
+  try {
+    const updated = await apiRequest<ProductApiRecord>(`/api/products/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(toProductApiPayload(updates)),
+    })
+
+    return fromApi(updated)
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null
+    }
+    throw error
   }
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS))
-  return cloneProducts(DEFAULT_PRODUCTS)
 }
 
-export function saveProducts(products: Product[]) {
-  if (typeof window === "undefined") return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(products))
-}
-
-export function addProduct(product: Omit<Product, "id" | "createdAt">): Product {
-  const products = getProducts()
-  const newProduct: Product = {
-    ...product,
-    id: Date.now().toString(),
-    createdAt: new Date().toISOString(),
+export async function deleteProduct(id: string): Promise<boolean> {
+  try {
+    await apiRequest<void>(`/api/products/${id}`, { method: "DELETE" })
+    return true
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return false
+    }
+    throw error
   }
-  products.push(newProduct)
-  saveProducts(products)
-  return newProduct
-}
-
-export function updateProduct(id: string, updates: Partial<Product>): Product | null {
-  const products = getProducts()
-  const index = products.findIndex((p) => p.id === id)
-  if (index === -1) return null
-  products[index] = { ...products[index], ...updates }
-  saveProducts(products)
-  return products[index]
-}
-
-export function deleteProduct(id: string): boolean {
-  const products = getProducts()
-  const filtered = products.filter((p) => p.id !== id)
-  if (filtered.length === products.length) return false
-  saveProducts(filtered)
-  return true
 }
 
 export function formatPrice(price: number): string {
@@ -139,9 +163,13 @@ export function formatPrice(price: number): string {
   }).format(price)
 }
 
-export function buildWhatsAppUrl(productName: string, phoneNumber = WHATSAPP_NUMBER): string {
+export function buildWhatsAppUrl(
+  productName: string,
+  phoneNumber = WHATSAPP_NUMBER,
+  customMessage?: string,
+): string {
   const message = encodeURIComponent(
-    `Hola! Me interesa el producto: ${productName}. Me podrias dar mas info?`
+    customMessage ?? `Hola! Me interesa el producto: ${productName}. Me podrias dar mas info?`
   )
   return `https://wa.me/${phoneNumber}?text=${message}`
 }

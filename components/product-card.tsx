@@ -4,12 +4,20 @@ import Image from "next/image"
 import { MessageCircle } from "lucide-react"
 import { Product } from "@/lib/types"
 import { formatPrice, buildWhatsAppUrl } from "@/lib/products"
+import { applyProductTemplate } from "@/lib/landing-content"
 
 interface ProductCardProps {
   product: Product
+  whatsappNumber?: string
+  whatsappMessageTemplate?: string
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, whatsappNumber, whatsappMessageTemplate }: ProductCardProps) {
+  const whatsappMessage = applyProductTemplate(
+    whatsappMessageTemplate ?? "Hola! Me interesa el producto: {product}. Me podrias dar mas info?",
+    product.name,
+  )
+
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300">
       <div className="relative aspect-square overflow-hidden bg-muted">
@@ -41,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {formatPrice(product.price)}
           </span>
           <a
-            href={buildWhatsAppUrl(product.name)}
+            href={buildWhatsAppUrl(product.name, whatsappNumber, whatsappMessage)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg bg-whatsapp px-3.5 py-2 text-xs font-semibold text-whatsapp-foreground shadow-sm hover:opacity-90 transition-opacity"

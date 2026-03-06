@@ -19,3 +19,28 @@ export const CATEGORIES = [
 ] as const
 
 export type Category = (typeof CATEGORIES)[number]
+
+export interface LandingContent {
+  brandName: string
+  logoUrl: string
+  navCatalogLabel: string
+  navCategoriesLabel: string
+  navContactLabel: string
+  heroBadge: string
+  heroTitle: string
+  heroTitleHighlight: string
+  heroDescription: string
+  heroPrimaryCtaLabel: string
+  heroSecondaryCtaLabel: string
+  catalogTitle: string
+  catalogDescription: string
+  footerDescription: string
+  footerContactText: string
+  whatsappButtonLabel: string
+  whatsappNumber: string
+  whatsappDefaultMessage: string
+  productInquiryTemplate: string
+  copyrightText: string
+}
+
+export type LandingSection = "logo" | "hero" | "catalogo" | "footer" | "productos"
