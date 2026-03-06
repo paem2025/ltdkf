@@ -6,8 +6,11 @@ export interface Product {
   category: string
   image: string
   featured?: boolean
+  sortOrder: number
   createdAt: string
 }
+
+export type ProductInput = Omit<Product, "id" | "createdAt">
 
 export const CATEGORIES = [
   "Ollas",

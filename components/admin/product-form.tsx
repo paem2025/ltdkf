@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Product, CATEGORIES } from "@/lib/types"
+import { Product, ProductInput, CATEGORIES } from "@/lib/types"
 import { X } from "lucide-react"
 
 interface ProductFormProps {
   product?: Product
-  onSubmit: (data: Omit<Product, "id" | "createdAt">) => void
+  onSubmit: (data: ProductInput) => void
   onCancel: () => void
 }
 
@@ -17,10 +17,14 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [category, setCategory] = useState(product?.category ?? CATEGORIES[0])
   const [image, setImage] = useState(product?.image ?? "")
   const [featured, setFeatured] = useState(product?.featured ?? false)
+  const [sortOrder, setSortOrder] = useState((product?.sortOrder ?? 0).toString())
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name || !price || !description || !category) return
+    if (!name || !price || !description || !category || sortOrder === "") return
+    const parsedSortOrder = Number(sortOrder)
+    if (!Number.isFinite(parsedSortOrder) || parsedSortOrder < 0) return
+
     onSubmit({
       name,
       price: Number(price),
@@ -28,6 +32,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       category,
       image: image || "/images/placeholder.jpg",
       featured,
+      sortOrder: parsedSortOrder,
     })
   }
 
@@ -70,6 +75,23 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                 required
               />
             </div>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="sort-order" className="text-sm font-medium text-foreground">Orden</label>
+              <input
+                id="sort-order"
+                type="number"
+                min={0}
+                step={1}
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                placeholder="0"
+                className="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
             <div className="flex flex-col gap-1.5">
               <label htmlFor="category" className="text-sm font-medium text-foreground">Categoria</label>
               <select

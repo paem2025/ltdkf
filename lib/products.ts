@@ -1,4 +1,4 @@
-import { Product } from "./types"
+import { Product, ProductInput } from "./types"
 import { ApiError, apiRequest } from "./api-client"
 
 export const WHATSAPP_NUMBER = "5491124848417"
@@ -12,6 +12,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Ollas",
     image: "/images/olla-cacerola-20.jpg",
     featured: true,
+    sortOrder: 0,
     createdAt: new Date().toISOString(),
   },
   {
@@ -22,6 +23,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Sartenes",
     image: "/images/sarten-24.jpg",
     featured: true,
+    sortOrder: 1,
     createdAt: new Date().toISOString(),
   },
   {
@@ -32,6 +34,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Ollas",
     image: "/images/olla-grande-26.jpg",
     featured: true,
+    sortOrder: 2,
     createdAt: new Date().toISOString(),
   },
   {
@@ -42,6 +45,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Bifera / Plancha",
     image: "/images/bifera-grill.jpg",
     featured: false,
+    sortOrder: 3,
     createdAt: new Date().toISOString(),
   },
   {
@@ -52,6 +56,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Cacerolas",
     image: "/images/cacerola-baja-24.jpg",
     featured: false,
+    sortOrder: 4,
     createdAt: new Date().toISOString(),
   },
   {
@@ -62,6 +67,7 @@ export const DEFAULT_PRODUCTS: Product[] = [
     category: "Sartenes",
     image: "/images/sarten-28.jpg",
     featured: false,
+    sortOrder: 5,
     createdAt: new Date().toISOString(),
   },
 ]
@@ -83,7 +89,7 @@ interface ProductApiRecord {
   updatedAt?: string
 }
 
-function toProductApiPayload(product: Omit<Product, "id" | "createdAt">) {
+function toProductApiPayload(product: ProductInput) {
   return {
     name: product.name,
     price: product.price,
@@ -91,7 +97,7 @@ function toProductApiPayload(product: Omit<Product, "id" | "createdAt">) {
     category: product.category,
     image: product.image,
     featured: Boolean(product.featured),
-    sortOrder: 0,
+    sortOrder: product.sortOrder,
   }
 }
 
@@ -104,22 +110,41 @@ function fromApi(record: ProductApiRecord): Product {
     category: record.category,
     image: record.image,
     featured: Boolean(record.featured),
+    sortOrder: record.sortOrder ?? 0,
     createdAt: record.createdAt,
   }
 }
 
-export async function getProducts(): Promise<Product[]> {
+type GetProductsOptions = {
+  endpoint?: "/api/products" | "/api/admin/products"
+  fallbackOnError?: boolean
+}
+
+export async function getProducts(options: GetProductsOptions = {}): Promise<Product[]> {
+  const endpoint = options.endpoint ?? "/api/products"
+  const fallbackOnError = options.fallbackOnError ?? true
+
   try {
-    const rows = await apiRequest<ProductApiRecord[]>("/api/products")
+    const rows = await apiRequest<ProductApiRecord[]>(endpoint)
     return rows.map(fromApi)
   } catch (error) {
+    if (!fallbackOnError) {
+      throw error
+    }
     console.error("No se pudieron cargar productos desde backend:", error)
     return cloneProducts(DEFAULT_PRODUCTS)
   }
 }
 
-export async function addProduct(product: Omit<Product, "id" | "createdAt">): Promise<Product> {
-  const created = await apiRequest<ProductApiRecord>("/api/products", {
+export async function getAdminProducts(): Promise<Product[]> {
+  return getProducts({
+    endpoint: "/api/admin/products",
+    fallbackOnError: false,
+  })
+}
+
+export async function addProduct(product: ProductInput): Promise<Product> {
+  const created = await apiRequest<ProductApiRecord>("/api/admin/products", {
     method: "POST",
     body: JSON.stringify(toProductApiPayload(product)),
   })
@@ -127,9 +152,9 @@ export async function addProduct(product: Omit<Product, "id" | "createdAt">): Pr
   return fromApi(created)
 }
 
-export async function updateProduct(id: string, updates: Omit<Product, "id" | "createdAt">): Promise<Product | null> {
+export async function updateProduct(id: string, updates: ProductInput): Promise<Product | null> {
   try {
-    const updated = await apiRequest<ProductApiRecord>(`/api/products/${id}`, {
+    const updated = await apiRequest<ProductApiRecord>(`/api/admin/products/${id}`, {
       method: "PUT",
       body: JSON.stringify(toProductApiPayload(updates)),
     })
@@ -145,7 +170,7 @@ export async function updateProduct(id: string, updates: Omit<Product, "id" | "c
 
 export async function deleteProduct(id: string): Promise<boolean> {
   try {
-    await apiRequest<void>(`/api/products/${id}`, { method: "DELETE" })
+    await apiRequest<void>(`/api/admin/products/${id}`, { method: "DELETE" })
     return true
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {

@@ -10,7 +10,7 @@ export class ApiError extends Error {
   }
 }
 
-const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "")
+const baseUrl = (process.env.NEXT_PUBLIC_API_BASE_URL || "").replace(/\/$/, "")
 
 export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
   const url = `${baseUrl}${path}`

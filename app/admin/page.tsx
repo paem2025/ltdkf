@@ -9,9 +9,21 @@ import { HeroSection } from "@/components/hero-section"
 import { ProductCatalog } from "@/components/product-catalog"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
-import { DEFAULT_LANDING_CONTENT, getLandingContent, resetLandingContent, saveLandingContent } from "@/lib/landing-content"
-import { DEFAULT_PRODUCTS, addProduct, deleteProduct, formatPrice, getProducts, updateProduct } from "@/lib/products"
-import { LandingContent, LandingSection, Product } from "@/lib/types"
+import {
+  DEFAULT_LANDING_CONTENT,
+  getAdminLandingContent,
+  resetLandingContent,
+  saveLandingContent,
+} from "@/lib/landing-content"
+import {
+  DEFAULT_PRODUCTS,
+  addProduct,
+  deleteProduct,
+  formatPrice,
+  getAdminProducts,
+  updateProduct,
+} from "@/lib/products"
+import { LandingContent, LandingSection, Product, ProductInput } from "@/lib/types"
 
 const SECTION_BUTTONS: Array<{ id: LandingSection; label: string }> = [
   { id: "logo", label: "Logo y menu" },
@@ -41,14 +53,17 @@ export default function AdminPage() {
 
     void (async () => {
       try {
-        const [loadedProducts, loadedLanding] = await Promise.all([getProducts(), getLandingContent()])
+        const [loadedProducts, loadedLanding] = await Promise.all([
+          getAdminProducts(),
+          getAdminLandingContent(),
+        ])
         if (!mounted) return
         setProducts(loadedProducts)
         setLandingContent(loadedLanding)
       } catch (error) {
         console.error("Error cargando datos del backend:", error)
         if (mounted) {
-          setErrorNotice("No se pudo conectar al backend. Revisa que el backend este levantado.")
+          setErrorNotice("No se pudo cargar el panel admin. Revisa backend, credenciales y token admin.")
         }
       }
     })()
@@ -64,7 +79,7 @@ export default function AdminPage() {
     return () => window.clearTimeout(timer)
   }, [saveNotice])
 
-  function handleAdd(data: Omit<Product, "id" | "createdAt">) {
+  function handleAdd(data: ProductInput) {
     void (async () => {
       try {
         const created = await addProduct(data)
@@ -79,7 +94,7 @@ export default function AdminPage() {
     })()
   }
 
-  function handleUpdate(data: Omit<Product, "id" | "createdAt">) {
+  function handleUpdate(data: ProductInput) {
     if (!editing) return
 
     void (async () => {

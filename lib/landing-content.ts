@@ -49,18 +49,36 @@ function sanitizeForApi(content: LandingContent): LandingContent {
   return mergeWithDefaults(content)
 }
 
-export async function getLandingContent(): Promise<LandingContent> {
+type GetLandingContentOptions = {
+  endpoint?: "/api/landing" | "/api/admin/landing"
+  fallbackOnError?: boolean
+}
+
+export async function getLandingContent(options: GetLandingContentOptions = {}): Promise<LandingContent> {
+  const endpoint = options.endpoint ?? "/api/landing"
+  const fallbackOnError = options.fallbackOnError ?? true
+
   try {
-    const payload = await apiRequest<LandingContentApiResponse>("/api/landing")
+    const payload = await apiRequest<LandingContentApiResponse>(endpoint)
     return mergeWithDefaults(payload)
   } catch (error) {
+    if (!fallbackOnError) {
+      throw error
+    }
     console.error("No se pudo cargar landing desde backend:", error)
     return cloneContent(DEFAULT_LANDING_CONTENT)
   }
 }
 
+export async function getAdminLandingContent(): Promise<LandingContent> {
+  return getLandingContent({
+    endpoint: "/api/admin/landing",
+    fallbackOnError: false,
+  })
+}
+
 export async function saveLandingContent(content: LandingContent): Promise<LandingContent> {
-  const payload = await apiRequest<LandingContentApiResponse>("/api/landing", {
+  const payload = await apiRequest<LandingContentApiResponse>("/api/admin/landing", {
     method: "PUT",
     body: JSON.stringify(sanitizeForApi(content)),
   })
