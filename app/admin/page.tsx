@@ -18,7 +18,6 @@ import {
 import { ApiError } from "@/lib/api-client"
 import { fileToCompressedDataUrl } from "@/lib/image-data-url"
 import {
-  DEFAULT_PRODUCTS,
   addProduct,
   deleteProduct,
   formatPrice,
@@ -41,7 +40,7 @@ const textAreaClassName =
   "rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20 resize-none"
 
 export default function AdminPage() {
-  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS)
+  const [products, setProducts] = useState<Product[]>([])
   const [landingContent, setLandingContent] = useState<LandingContent>(DEFAULT_LANDING_CONTENT)
   const [selectedSection, setSelectedSection] = useState<LandingSection>("logo")
   const [showForm, setShowForm] = useState(false)
