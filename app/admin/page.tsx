@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Check, Package, Pencil, Plus, RotateCcw, Save, Trash2 } from "lucide-react"
@@ -15,6 +15,8 @@ import {
   resetLandingContent,
   saveLandingContent,
 } from "@/lib/landing-content"
+import { ApiError } from "@/lib/api-client"
+import { fileToCompressedDataUrl } from "@/lib/image-data-url"
 import {
   DEFAULT_PRODUCTS,
   addProduct,
@@ -47,6 +49,18 @@ export default function AdminPage() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [saveNotice, setSaveNotice] = useState<string | null>(null)
   const [errorNotice, setErrorNotice] = useState<string | null>(null)
+  const [isPickingLogo, setIsPickingLogo] = useState(false)
+  const logoFileRef = useRef<HTMLInputElement | null>(null)
+
+  function getErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof ApiError) {
+      return `${fallback} (${error.message})`
+    }
+    if (error instanceof Error && error.message) {
+      return `${fallback} (${error.message})`
+    }
+    return fallback
+  }
 
   useEffect(() => {
     let mounted = true
@@ -89,7 +103,7 @@ export default function AdminPage() {
         setErrorNotice(null)
       } catch (error) {
         console.error("Error creando producto:", error)
-        setErrorNotice("No se pudo crear el producto en el backend.")
+        setErrorNotice(getErrorMessage(error, "No se pudo crear el producto en el backend."))
       }
     })()
   }
@@ -111,7 +125,7 @@ export default function AdminPage() {
         setErrorNotice(null)
       } catch (error) {
         console.error("Error actualizando producto:", error)
-        setErrorNotice("No se pudo actualizar el producto en el backend.")
+        setErrorNotice(getErrorMessage(error, "No se pudo actualizar el producto en el backend."))
       }
     })()
   }
@@ -131,7 +145,7 @@ export default function AdminPage() {
         setErrorNotice(null)
       } catch (error) {
         console.error("Error eliminando producto:", error)
-        setErrorNotice("No se pudo eliminar el producto en el backend.")
+        setErrorNotice(getErrorMessage(error, "No se pudo eliminar el producto en el backend."))
       }
     })()
   }
@@ -150,6 +164,33 @@ export default function AdminPage() {
     setLandingContent((prev) => ({ ...prev, [key]: value }))
   }
 
+  function openLogoFileDialog() {
+    logoFileRef.current?.click()
+  }
+
+  function handleLogoFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    void (async () => {
+      try {
+        setIsPickingLogo(true)
+        setErrorNotice(null)
+        const dataUrl = await fileToCompressedDataUrl(file, {
+          maxDimension: 1000,
+          quality: 0.85,
+          maxDataUrlLength: 1_400_000,
+        })
+        updateLandingField("logoUrl", dataUrl)
+      } catch (error) {
+        setErrorNotice(getErrorMessage(error, "No se pudo cargar la imagen del logo."))
+      } finally {
+        setIsPickingLogo(false)
+        event.target.value = ""
+      }
+    })()
+  }
+
   function handleSaveLanding() {
     void (async () => {
       try {
@@ -159,7 +200,7 @@ export default function AdminPage() {
         setErrorNotice(null)
       } catch (error) {
         console.error("Error guardando landing:", error)
-        setErrorNotice("No se pudo guardar la landing en el backend.")
+        setErrorNotice(getErrorMessage(error, "No se pudo guardar la landing en el backend."))
       }
     })()
   }
@@ -173,7 +214,7 @@ export default function AdminPage() {
         setErrorNotice(null)
       } catch (error) {
         console.error("Error restableciendo landing:", error)
-        setErrorNotice("No se pudo restablecer la landing en el backend.")
+        setErrorNotice(getErrorMessage(error, "No se pudo restablecer la landing en el backend."))
       }
     })()
   }
@@ -325,6 +366,24 @@ export default function AdminPage() {
                       onChange={(e) => updateLandingField("logoUrl", e.target.value)}
                       className={inputClassName}
                     />
+                    <input
+                      ref={logoFileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoFileChange}
+                    />
+                    <div className="mt-1 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={openLogoFileDialog}
+                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+                        disabled={isPickingLogo}
+                      >
+                        {isPickingLogo ? "Procesando..." : "Buscar foto en mi PC"}
+                      </button>
+                      <span className="text-[11px] text-muted-foreground">Tambien puedes pegar una URL.</span>
+                    </div>
                   </label>
                   <label className="flex flex-col gap-1.5">
                     <span className="text-xs font-medium text-muted-foreground">Item menu catalogo</span>

@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Product, ProductInput, CATEGORIES } from "@/lib/types"
 import { X } from "lucide-react"
+import { fileToCompressedDataUrl } from "@/lib/image-data-url"
 
 interface ProductFormProps {
   product?: Product
@@ -18,6 +19,9 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [image, setImage] = useState(product?.image ?? "")
   const [featured, setFeatured] = useState(product?.featured ?? false)
   const [sortOrder, setSortOrder] = useState((product?.sortOrder ?? 0).toString())
+  const [imageError, setImageError] = useState<string | null>(null)
+  const [isPickingImage, setIsPickingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -34,6 +38,34 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       featured,
       sortOrder: parsedSortOrder,
     })
+  }
+
+  function handlePickImageClick() {
+    fileInputRef.current?.click()
+  }
+
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    void (async () => {
+      try {
+        setIsPickingImage(true)
+        setImageError(null)
+        const dataUrl = await fileToCompressedDataUrl(file, {
+          maxDimension: 1400,
+          quality: 0.82,
+          maxDataUrlLength: 1_400_000,
+        })
+        setImage(dataUrl)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "No se pudo cargar la imagen."
+        setImageError(message)
+      } finally {
+        setIsPickingImage(false)
+        event.target.value = ""
+      }
+    })()
   }
 
   return (
@@ -130,6 +162,32 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
               placeholder="/images/mi-producto.jpg"
               className="rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
             />
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <button
+                type="button"
+                onClick={handlePickImageClick}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+                disabled={isPickingImage}
+              >
+                {isPickingImage ? "Procesando..." : "Buscar foto en mi PC"}
+              </button>
+              <span className="text-[11px] text-muted-foreground">
+                Tambien puedes pegar una URL si prefieres.
+              </span>
+            </div>
+            {imageError && <span className="text-xs text-destructive">{imageError}</span>}
+            {image && (
+              <div className="mt-2 h-24 w-24 overflow-hidden rounded-lg border border-border bg-muted">
+                <img src={image} alt="Preview producto" className="h-full w-full object-cover" />
+              </div>
+            )}
           </div>
 
           <label className="flex items-center gap-2.5 cursor-pointer">

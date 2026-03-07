@@ -51,13 +51,9 @@ export async function forwardToBackend(path: string, options: ForwardOptions = {
 
   if (options.requiresAdminToken) {
     const token = getAdminToken()
-    if (!token) {
-      return NextResponse.json(
-        { error: "Admin API token is not configured on frontend server" },
-        { status: 503 },
-      )
+    if (token) {
+      headers.set("X-Admin-Token", token)
     }
-    headers.set("X-Admin-Token", token)
   }
 
   const normalizedPath = path.startsWith("/") ? path : `/${path}`
