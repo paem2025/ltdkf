@@ -67,7 +67,6 @@ export async function forwardToBackend(path: string, options: ForwardOptions = {
       cache: "no-store",
     })
 
-    const responseText = await backendResponse.text()
     const responseHeaders = new Headers()
     const contentType = backendResponse.headers.get("content-type")
 
@@ -75,7 +74,7 @@ export async function forwardToBackend(path: string, options: ForwardOptions = {
       responseHeaders.set("content-type", contentType)
     }
 
-    return new Response(responseText, {
+    return new Response(backendResponse.body, {
       status: backendResponse.status,
       headers: responseHeaders,
     })
