@@ -45,7 +45,7 @@ export function ProductCard({
             onClick={onEditProducts}
             className="absolute right-2 top-2 z-20 rounded-md border border-[#C2410C]/20 bg-white/90 px-2 py-1 text-[11px] font-semibold text-[#7C2D12] shadow-sm hover:bg-white"
           >
-            Editar imagen
+            editar
           </button>
         )}
         <Image
@@ -83,7 +83,7 @@ export function ProductCard({
               aria-label={`Editar producto ${product.name}`}
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Editar</span>
+              <span className="hidden sm:inline">editar</span>
             </button>
           ) : (
             <a

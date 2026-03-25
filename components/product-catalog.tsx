@@ -75,26 +75,16 @@ export function ProductCatalog({
 
   return (
     <section id="catalogo" className="relative mx-auto max-w-7xl px-4 py-14 lg:px-8 lg:py-20">
-      {canEdit && (
-        <div className="absolute right-4 top-6 z-20 flex gap-2">
+      <div className="relative mb-8 rounded-3xl border border-[#C2410C]/16 bg-[#FFF7ED] px-6 py-8 text-center shadow-[0_26px_48px_-36px_rgba(154,52,18,0.85)]">
+        {canEdit && (
           <button
             type="button"
             onClick={openCatalogEditor}
-            className="rounded-lg border border-border bg-card/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm hover:bg-muted transition-colors"
+            className="absolute right-4 top-3 text-xs font-semibold text-[#2F2F2F] hover:opacity-70"
           >
-            Editar textos
+            editar
           </button>
-          <button
-            type="button"
-            onClick={openProductsEditor}
-            className="rounded-lg border border-border bg-card/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm hover:bg-muted transition-colors"
-          >
-            Editar productos
-          </button>
-        </div>
-      )}
-
-      <div className="mb-8 rounded-3xl border border-[#C2410C]/16 bg-[#FFF7ED] px-6 py-8 text-center shadow-[0_26px_48px_-36px_rgba(154,52,18,0.85)]">
+        )}
         {canEdit ? (
           <button
             type="button"
@@ -129,35 +119,37 @@ export function ProductCatalog({
         <SearchBar value={search} onChange={setSearch} />
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-[#C2410C]/16 bg-[#FFF7ED] py-24 text-[#7C2D12]/75">
-          <PackageOpen className="mb-4 h-16 w-16 opacity-50" />
-          <p className="text-lg font-semibold">No se encontraron productos</p>
-          <p className="mt-1 text-sm">Intenta con otra busqueda o categoria.</p>
-          {canEdit && (
-            <button
-              type="button"
-              onClick={openProductsEditor}
-              className="mt-4 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm hover:bg-muted transition-colors"
-            >
-              Editar productos
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              whatsappNumber={whatsappNumber}
-              whatsappMessageTemplate={productInquiryTemplate}
-              adminMode={adminMode}
-              onEditProducts={canEdit ? openProductsEditor : undefined}
-            />
-          ))}
-        </div>
-      )}
+      <div className="relative">
+        {canEdit && (
+          <button
+            type="button"
+            onClick={openProductsEditor}
+            className="absolute -top-6 right-1 z-20 text-xs font-semibold text-[#2F2F2F] hover:opacity-70"
+          >
+            editar
+          </button>
+        )}
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-[#C2410C]/16 bg-[#FFF7ED] py-24 text-[#7C2D12]/75">
+            <PackageOpen className="mb-4 h-16 w-16 opacity-50" />
+            <p className="text-lg font-semibold">No se encontraron productos</p>
+            <p className="mt-1 text-sm">Intenta con otra busqueda o categoria.</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                whatsappNumber={whatsappNumber}
+                whatsappMessageTemplate={productInquiryTemplate}
+                adminMode={adminMode}
+                onEditProducts={canEdit ? openProductsEditor : undefined}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   )
 }
