@@ -44,7 +44,16 @@ export function SiteFooter({ content, adminMode = false, onEditSection }: SiteFo
       <div className="pointer-events-none absolute right-0 top-4 h-24 w-24 rounded-full bg-[#F59E0B]/10 blur-3xl" />
       <div className="mx-auto max-w-7xl px-4 py-14 lg:px-8">
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-[#9A3412]/18 bg-white/70 p-4 shadow-[0_16px_32px_-26px_rgba(154,52,18,0.85)]">
+          <div className="relative rounded-2xl border border-[#9A3412]/18 bg-white/70 p-4 shadow-[0_16px_32px_-26px_rgba(154,52,18,0.85)]">
+            {canEdit && (
+              <button
+                type="button"
+                onClick={openFooterEditor}
+                className="absolute right-4 top-3 text-xs font-semibold text-[#2F2F2F] hover:opacity-70"
+              >
+                editar
+              </button>
+            )}
             <div className="mb-4 flex items-center gap-3">
               {canEdit ? (
                 <button type="button" onClick={openLogoEditor} aria-label="Editar logo y menu">
@@ -96,7 +105,16 @@ export function SiteFooter({ content, adminMode = false, onEditSection }: SiteFo
             )}
           </div>
 
-          <div className="rounded-2xl border border-[#9A3412]/18 bg-white/70 p-4 shadow-[0_16px_32px_-26px_rgba(154,52,18,0.85)]">
+          <div className="relative rounded-2xl border border-[#9A3412]/18 bg-white/70 p-4 shadow-[0_16px_32px_-26px_rgba(154,52,18,0.85)]">
+            {canEdit && (
+              <button
+                type="button"
+                onClick={openLogoEditor}
+                className="absolute right-4 top-3 text-xs font-semibold text-[#2F2F2F] hover:opacity-70"
+              >
+                editar
+              </button>
+            )}
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.16em] text-[#7C2D12]/75">
               Navegacion
             </h3>
@@ -149,7 +167,16 @@ export function SiteFooter({ content, adminMode = false, onEditSection }: SiteFo
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-[#9A3412]/18 bg-white/70 p-4 shadow-[0_16px_32px_-26px_rgba(154,52,18,0.85)]">
+          <div className="relative rounded-2xl border border-[#9A3412]/18 bg-white/70 p-4 shadow-[0_16px_32px_-26px_rgba(154,52,18,0.85)]">
+            {canEdit && (
+              <button
+                type="button"
+                onClick={openFooterEditor}
+                className="absolute right-4 top-3 text-xs font-semibold text-[#2F2F2F] hover:opacity-70"
+              >
+                editar
+              </button>
+            )}
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-[0.16em] text-[#7C2D12]/75">
               Contacto
             </h3>
@@ -191,6 +218,15 @@ export function SiteFooter({ content, adminMode = false, onEditSection }: SiteFo
         </div>
 
         <div className="mt-10 border-t border-[#9A3412]/20 pt-6 text-center">
+          {canEdit && (
+            <button
+              type="button"
+              onClick={openFooterEditor}
+              className="mb-2 text-xs font-semibold text-[#2F2F2F] hover:opacity-70"
+            >
+              editar
+            </button>
+          )}
           {canEdit ? (
             <button
               type="button"

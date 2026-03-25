@@ -38,6 +38,15 @@ export function HeroSection({ content, adminMode = false, onEditSection }: HeroS
             <div className="absolute -bottom-1/3 -left-1/4 h-[380px] w-[380px] rounded-full bg-[#F59E0B]/20" />
           </div>
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#9A3412]/45 to-transparent" />
+          {canEdit && (
+            <button
+              type="button"
+              onClick={openHeroEditor}
+              className="absolute right-6 top-6 z-20 text-xs font-semibold text-[#2F2F2F] hover:opacity-70"
+            >
+              editar
+            </button>
+          )}
 
           <div className="relative grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="max-w-2xl">
