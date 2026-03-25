@@ -65,7 +65,7 @@ export function ProductCatalog({
   }, [products, search, category])
 
   return (
-    <section id="catalogo" className="relative mx-auto max-w-7xl px-4 py-16 lg:px-8 lg:py-24">
+    <section id="catalogo" className="relative mx-auto max-w-7xl px-4 py-14 lg:px-8 lg:py-20">
       {adminMode && onEditSection && (
         <div className="absolute right-4 top-6 z-20 flex gap-2">
           <button
@@ -85,24 +85,24 @@ export function ProductCatalog({
         </div>
       )}
 
-      <div className="mb-12 text-center">
-        <h2 className="text-3xl font-serif text-foreground lg:text-4xl text-balance">
+      <div className="mb-8 rounded-3xl border border-[#C2410C]/16 bg-[#FFF7ED] px-6 py-8 text-center shadow-[0_26px_48px_-36px_rgba(154,52,18,0.85)]">
+        <h2 className="text-balance text-3xl font-serif text-[#7C2D12] lg:text-4xl">
           {heading}
         </h2>
-        <p className="mt-3 text-muted-foreground leading-relaxed">
+        <p className="mt-3 leading-relaxed text-[#7C2D12]/80">
           {description}
         </p>
       </div>
 
-      <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-[#C2410C]/16 bg-white/80 px-4 py-4 shadow-[0_16px_36px_-30px_rgba(154,52,18,0.85)] md:flex-row md:items-center md:justify-between">
         <CategoryFilter selected={category} onSelect={setCategory} />
         <SearchBar value={search} onChange={setSearch} />
       </div>
 
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-          <PackageOpen className="mb-4 h-16 w-16 opacity-40" />
-          <p className="text-lg font-medium">No se encontraron productos</p>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-[#C2410C]/16 bg-[#FFF7ED] py-24 text-[#7C2D12]/75">
+          <PackageOpen className="mb-4 h-16 w-16 opacity-50" />
+          <p className="text-lg font-semibold">No se encontraron productos</p>
           <p className="mt-1 text-sm">Intenta con otra busqueda o categoria.</p>
         </div>
       ) : (

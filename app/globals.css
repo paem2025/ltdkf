@@ -126,5 +126,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(circle at 8% 8%, rgb(194 65 12 / 0.08), transparent 34%),
+      radial-gradient(circle at 92% 0%, rgb(245 158 11 / 0.08), transparent 38%);
+    background-attachment: fixed;
   }
 }

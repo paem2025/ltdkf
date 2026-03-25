@@ -19,8 +19,9 @@ export function ProductCard({ product, whatsappNumber, whatsappMessageTemplate }
   )
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl bg-card border border-border shadow-sm hover:shadow-md transition-all duration-300">
-      <div className="relative aspect-square overflow-hidden bg-muted">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-[#C2410C]/16 bg-white shadow-[0_20px_36px_-30px_rgba(154,52,18,0.9)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_44px_-28px_rgba(154,52,18,0.95)]">
+      <div className="pointer-events-none absolute -right-5 -top-5 h-16 w-16 rotate-45 border border-[#C2410C]/22 bg-[#C2410C]/6" />
+      <div className="relative aspect-square overflow-hidden bg-[#FFF7ED]">
         <Image
           src={product.image}
           alt={product.name}
@@ -29,30 +30,30 @@ export function ProductCard({ product, whatsappNumber, whatsappMessageTemplate }
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         {product.featured && (
-          <span className="absolute top-3 left-3 rounded-md bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">
+          <span className="absolute left-3 top-3 rounded-md border border-[#C2410C]/18 bg-[#C2410C] px-2.5 py-1 text-xs font-semibold text-white shadow-[0_8px_18px_-14px_rgba(194,65,12,0.9)]">
             Destacado
           </span>
         )}
       </div>
       <div className="flex flex-1 flex-col p-5">
-        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#9A3412]/65">
           {product.category}
         </span>
-        <h3 className="mt-1.5 text-lg font-semibold text-card-foreground leading-snug">
+        <h3 className="mt-1.5 text-lg font-semibold leading-snug text-[#7C2D12]">
           {product.name}
         </h3>
-        <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-2">
+        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-[#7C2D12]/70">
           {product.description}
         </p>
         <div className="mt-auto flex items-end justify-between pt-5">
-          <span className="text-2xl font-bold text-foreground">
+          <span className="text-2xl font-bold text-[#7C2D12]">
             {formatPrice(product.price)}
           </span>
           <a
             href={buildWhatsAppUrl(product.name, whatsappNumber, whatsappMessage)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-whatsapp px-3.5 py-2 text-xs font-semibold text-whatsapp-foreground shadow-sm hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-whatsapp px-3.5 py-2 text-xs font-semibold text-whatsapp-foreground shadow-[0_0_18px_rgba(37,211,102,0.35)] transition-all hover:-translate-y-0.5 hover:opacity-95"
             aria-label={`Consultar por WhatsApp sobre ${product.name}`}
           >
             <MessageCircle className="h-4 w-4" />
