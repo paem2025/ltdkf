@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowLeft, Check, Package, Pencil, Plus, RotateCcw, Save, Trash2 } from "lucide-react"
+import { ArrowLeft, Check, Package, Pencil, Plus, RotateCcw, Save, Trash2, X } from "lucide-react"
 import { ProductForm } from "@/components/admin/product-form"
 import { HeroSection } from "@/components/hero-section"
 import { ProductCatalog } from "@/components/product-catalog"
@@ -26,13 +26,13 @@ import {
 } from "@/lib/products"
 import { LandingContent, LandingSection, Product, ProductInput } from "@/lib/types"
 
-const SECTION_BUTTONS: Array<{ id: LandingSection; label: string }> = [
-  { id: "logo", label: "Logo y menu" },
-  { id: "hero", label: "Hero" },
-  { id: "catalogo", label: "Catalogo" },
-  { id: "footer", label: "Footer" },
-  { id: "productos", label: "Productos" },
-]
+const SECTION_LABELS: Record<LandingSection, string> = {
+  logo: "Logo y menu",
+  hero: "Hero",
+  catalogo: "Catalogo",
+  footer: "Footer",
+  productos: "Productos",
+}
 /* */
 const inputClassName =
   "rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
@@ -43,6 +43,7 @@ export default function AdminPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [landingContent, setLandingContent] = useState<LandingContent>(DEFAULT_LANDING_CONTENT)
   const [selectedSection, setSelectedSection] = useState<LandingSection>("logo")
+  const [isSectionEditorOpen, setIsSectionEditorOpen] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<Product | undefined>()
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
@@ -220,9 +221,17 @@ export default function AdminPage() {
 
   function focusSection(section: LandingSection) {
     setSelectedSection(section)
-    const targetId = section === "productos" ? "admin-productos" : `editor-${section}`
+    setIsSectionEditorOpen(true)
+  }
+
+  function closeSectionEditor() {
+    setIsSectionEditorOpen(false)
+  }
+
+  function openProductsManagement() {
+    closeSectionEditor()
     window.setTimeout(() => {
-      document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" })
+      document.getElementById("admin-productos")?.scrollIntoView({ behavior: "smooth", block: "start" })
     }, 0)
   }
 
@@ -279,12 +288,12 @@ export default function AdminPage() {
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="border-b border-border px-4 py-3 lg:px-6">
               <h2 className="text-sm font-semibold text-card-foreground">Vista previa editable</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                Es la misma landing publica, con botones "Editar" sobre cada bloque.
+                Haz click en botones, textos e imagenes para abrir el editor popup.
               </p>
             </div>
 
@@ -306,27 +315,18 @@ export default function AdminPage() {
 
           <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
             <div className="rounded-xl border border-border bg-card p-4">
-              <h2 className="text-base font-semibold text-card-foreground">Editor de secciones</h2>
+              <h2 className="text-base font-semibold text-card-foreground">Editor popup</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                Selecciona la parte de la landing que quieres editar.
+                Seccion activa: {SECTION_LABELS[selectedSection]}.
               </p>
 
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {SECTION_BUTTONS.map((section) => (
-                  <button
-                    key={section.id}
-                    type="button"
-                    onClick={() => focusSection(section.id)}
-                    className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-colors ${
-                      selectedSection === section.id
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {section.label}
-                  </button>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => setIsSectionEditorOpen(true)}
+                className="mt-4 w-full rounded-lg border border-border px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+              >
+                Abrir editor
+              </button>
 
               <div className="mt-4 flex gap-2">
                 <button
@@ -345,242 +345,6 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
-
-            {selectedSection === "logo" && (
-              <div id="editor-logo" className="rounded-xl border border-border bg-card p-4">
-                <h3 className="text-sm font-semibold text-card-foreground">Logo y menu</h3>
-                <div className="mt-4 flex flex-col gap-3">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Nombre de marca</span>
-                    <input
-                      value={landingContent.brandName}
-                      onChange={(e) => updateLandingField("brandName", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">URL de logo</span>
-                    <input
-                      value={landingContent.logoUrl}
-                      onChange={(e) => updateLandingField("logoUrl", e.target.value)}
-                      className={inputClassName}
-                    />
-                    <input
-                      ref={logoFileRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleLogoFileChange}
-                    />
-                    <div className="mt-1 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={openLogoFileDialog}
-                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
-                        disabled={isPickingLogo}
-                      >
-                        {isPickingLogo ? "Procesando..." : "Buscar foto en mi PC"}
-                      </button>
-                      <span className="text-[11px] text-muted-foreground">Tambien puedes pegar una URL.</span>
-                    </div>
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Item menu catalogo</span>
-                    <input
-                      value={landingContent.navCatalogLabel}
-                      onChange={(e) => updateLandingField("navCatalogLabel", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Item menu categorias</span>
-                    <input
-                      value={landingContent.navCategoriesLabel}
-                      onChange={(e) => updateLandingField("navCategoriesLabel", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Item menu contacto</span>
-                    <input
-                      value={landingContent.navContactLabel}
-                      onChange={(e) => updateLandingField("navContactLabel", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                </div>
-              </div>
-            )}
-
-            {selectedSection === "hero" && (
-              <div id="editor-hero" className="rounded-xl border border-border bg-card p-4">
-                <h3 className="text-sm font-semibold text-card-foreground">Hero</h3>
-                <div className="mt-4 flex flex-col gap-3">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Etiqueta superior</span>
-                    <input
-                      value={landingContent.heroBadge}
-                      onChange={(e) => updateLandingField("heroBadge", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Titulo principal</span>
-                    <input
-                      value={landingContent.heroTitle}
-                      onChange={(e) => updateLandingField("heroTitle", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Parte destacada del titulo</span>
-                    <input
-                      value={landingContent.heroTitleHighlight}
-                      onChange={(e) => updateLandingField("heroTitleHighlight", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Descripcion</span>
-                    <textarea
-                      rows={4}
-                      value={landingContent.heroDescription}
-                      onChange={(e) => updateLandingField("heroDescription", e.target.value)}
-                      className={textAreaClassName}
-                    />
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <label className="flex flex-col gap-1.5">
-                      <span className="text-xs font-medium text-muted-foreground">Boton principal</span>
-                      <input
-                        value={landingContent.heroPrimaryCtaLabel}
-                        onChange={(e) => updateLandingField("heroPrimaryCtaLabel", e.target.value)}
-                        className={inputClassName}
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1.5">
-                      <span className="text-xs font-medium text-muted-foreground">Boton secundario</span>
-                      <input
-                        value={landingContent.heroSecondaryCtaLabel}
-                        onChange={(e) => updateLandingField("heroSecondaryCtaLabel", e.target.value)}
-                        className={inputClassName}
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {selectedSection === "catalogo" && (
-              <div id="editor-catalogo" className="rounded-xl border border-border bg-card p-4">
-                <h3 className="text-sm font-semibold text-card-foreground">Catalogo</h3>
-                <div className="mt-4 flex flex-col gap-3">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Titulo</span>
-                    <input
-                      value={landingContent.catalogTitle}
-                      onChange={(e) => updateLandingField("catalogTitle", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Descripcion</span>
-                    <textarea
-                      rows={4}
-                      value={landingContent.catalogDescription}
-                      onChange={(e) => updateLandingField("catalogDescription", e.target.value)}
-                      className={textAreaClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Plantilla WhatsApp producto</span>
-                    <textarea
-                      rows={3}
-                      value={landingContent.productInquiryTemplate}
-                      onChange={(e) => updateLandingField("productInquiryTemplate", e.target.value)}
-                      className={textAreaClassName}
-                    />
-                    <span className="text-[11px] text-muted-foreground">
-                      Usa <code>{"{product}"}</code> para insertar el nombre del producto.
-                    </span>
-                  </label>
-                </div>
-              </div>
-            )}
-
-            {selectedSection === "footer" && (
-              <div id="editor-footer" className="rounded-xl border border-border bg-card p-4">
-                <h3 className="text-sm font-semibold text-card-foreground">Footer y WhatsApp</h3>
-                <div className="mt-4 flex flex-col gap-3">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Descripcion footer</span>
-                    <textarea
-                      rows={3}
-                      value={landingContent.footerDescription}
-                      onChange={(e) => updateLandingField("footerDescription", e.target.value)}
-                      className={textAreaClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Texto de contacto</span>
-                    <textarea
-                      rows={3}
-                      value={landingContent.footerContactText}
-                      onChange={(e) => updateLandingField("footerContactText", e.target.value)}
-                      className={textAreaClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Texto boton WhatsApp</span>
-                    <input
-                      value={landingContent.whatsappButtonLabel}
-                      onChange={(e) => updateLandingField("whatsappButtonLabel", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Numero WhatsApp (sin +)</span>
-                    <input
-                      value={landingContent.whatsappNumber}
-                      onChange={(e) => updateLandingField("whatsappNumber", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Mensaje base WhatsApp</span>
-                    <textarea
-                      rows={3}
-                      value={landingContent.whatsappDefaultMessage}
-                      onChange={(e) => updateLandingField("whatsappDefaultMessage", e.target.value)}
-                      className={textAreaClassName}
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-muted-foreground">Copyright</span>
-                    <input
-                      value={landingContent.copyrightText}
-                      onChange={(e) => updateLandingField("copyrightText", e.target.value)}
-                      className={inputClassName}
-                    />
-                  </label>
-                </div>
-              </div>
-            )}
-
-            {selectedSection === "productos" && (
-              <div className="rounded-xl border border-border bg-card p-4">
-                <h3 className="text-sm font-semibold text-card-foreground">Productos y fotos</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Debajo tienes el listado para crear, editar o borrar productos y cambiar sus imagenes.
-                </p>
-                <button
-                  onClick={() => document.getElementById("admin-productos")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
-                >
-                  Ir al listado de productos
-                </button>
-              </div>
-            )}
           </aside>
         </div>
 
@@ -691,6 +455,273 @@ export default function AdminPage() {
           </div>
         </section>
       </div>
+
+      {isSectionEditorOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 p-4 backdrop-blur-sm">
+          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div>
+                <h2 className="text-base font-semibold text-card-foreground">Editar {SECTION_LABELS[selectedSection]}</h2>
+                <p className="text-xs text-muted-foreground">Los cambios quedan en borrador hasta tocar "Guardar landing".</p>
+              </div>
+              <button
+                type="button"
+                onClick={closeSectionEditor}
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                aria-label="Cerrar editor"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto p-5">
+              {selectedSection === "logo" && (
+                <div className="flex flex-col gap-3">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Nombre de marca</span>
+                    <input
+                      value={landingContent.brandName}
+                      onChange={(e) => updateLandingField("brandName", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">URL de logo</span>
+                    <input
+                      value={landingContent.logoUrl}
+                      onChange={(e) => updateLandingField("logoUrl", e.target.value)}
+                      className={inputClassName}
+                    />
+                    <input
+                      ref={logoFileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoFileChange}
+                    />
+                    <div className="mt-1 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={openLogoFileDialog}
+                        className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+                        disabled={isPickingLogo}
+                      >
+                        {isPickingLogo ? "Procesando..." : "Buscar foto en mi PC"}
+                      </button>
+                      <span className="text-[11px] text-muted-foreground">Tambien puedes pegar una URL.</span>
+                    </div>
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Item menu catalogo</span>
+                    <input
+                      value={landingContent.navCatalogLabel}
+                      onChange={(e) => updateLandingField("navCatalogLabel", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Item menu categorias</span>
+                    <input
+                      value={landingContent.navCategoriesLabel}
+                      onChange={(e) => updateLandingField("navCategoriesLabel", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Item menu contacto</span>
+                    <input
+                      value={landingContent.navContactLabel}
+                      onChange={(e) => updateLandingField("navContactLabel", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                </div>
+              )}
+
+              {selectedSection === "hero" && (
+                <div className="flex flex-col gap-3">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Etiqueta superior</span>
+                    <input
+                      value={landingContent.heroBadge}
+                      onChange={(e) => updateLandingField("heroBadge", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Titulo principal</span>
+                    <input
+                      value={landingContent.heroTitle}
+                      onChange={(e) => updateLandingField("heroTitle", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Parte destacada del titulo</span>
+                    <input
+                      value={landingContent.heroTitleHighlight}
+                      onChange={(e) => updateLandingField("heroTitleHighlight", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Descripcion</span>
+                    <textarea
+                      rows={4}
+                      value={landingContent.heroDescription}
+                      onChange={(e) => updateLandingField("heroDescription", e.target.value)}
+                      className={textAreaClassName}
+                    />
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">Boton principal</span>
+                      <input
+                        value={landingContent.heroPrimaryCtaLabel}
+                        onChange={(e) => updateLandingField("heroPrimaryCtaLabel", e.target.value)}
+                        className={inputClassName}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">Boton secundario</span>
+                      <input
+                        value={landingContent.heroSecondaryCtaLabel}
+                        onChange={(e) => updateLandingField("heroSecondaryCtaLabel", e.target.value)}
+                        className={inputClassName}
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {selectedSection === "catalogo" && (
+                <div className="flex flex-col gap-3">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Titulo</span>
+                    <input
+                      value={landingContent.catalogTitle}
+                      onChange={(e) => updateLandingField("catalogTitle", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Descripcion</span>
+                    <textarea
+                      rows={4}
+                      value={landingContent.catalogDescription}
+                      onChange={(e) => updateLandingField("catalogDescription", e.target.value)}
+                      className={textAreaClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Plantilla WhatsApp producto</span>
+                    <textarea
+                      rows={3}
+                      value={landingContent.productInquiryTemplate}
+                      onChange={(e) => updateLandingField("productInquiryTemplate", e.target.value)}
+                      className={textAreaClassName}
+                    />
+                    <span className="text-[11px] text-muted-foreground">
+                      Usa <code>{"{product}"}</code> para insertar el nombre del producto.
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {selectedSection === "footer" && (
+                <div className="flex flex-col gap-3">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Descripcion footer</span>
+                    <textarea
+                      rows={3}
+                      value={landingContent.footerDescription}
+                      onChange={(e) => updateLandingField("footerDescription", e.target.value)}
+                      className={textAreaClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Texto de contacto</span>
+                    <textarea
+                      rows={3}
+                      value={landingContent.footerContactText}
+                      onChange={(e) => updateLandingField("footerContactText", e.target.value)}
+                      className={textAreaClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Texto boton WhatsApp</span>
+                    <input
+                      value={landingContent.whatsappButtonLabel}
+                      onChange={(e) => updateLandingField("whatsappButtonLabel", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Numero WhatsApp (sin +)</span>
+                    <input
+                      value={landingContent.whatsappNumber}
+                      onChange={(e) => updateLandingField("whatsappNumber", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Mensaje base WhatsApp</span>
+                    <textarea
+                      rows={3}
+                      value={landingContent.whatsappDefaultMessage}
+                      onChange={(e) => updateLandingField("whatsappDefaultMessage", e.target.value)}
+                      className={textAreaClassName}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Copyright</span>
+                    <input
+                      value={landingContent.copyrightText}
+                      onChange={(e) => updateLandingField("copyrightText", e.target.value)}
+                      className={inputClassName}
+                    />
+                  </label>
+                </div>
+              )}
+
+              {selectedSection === "productos" && (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Para editar precio, nombre, descripcion o imagen de un producto, abre el listado de productos.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={openProductsManagement}
+                    className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+                  >
+                    Ir al listado de productos
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {selectedSection !== "productos" && (
+              <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-3">
+                <button
+                  type="button"
+                  onClick={closeSectionEditor}
+                  className="rounded-lg border border-border px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveLanding}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+                >
+                  <Save className="h-3.5 w-3.5" />
+                  Guardar landing
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <ProductForm

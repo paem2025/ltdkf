@@ -27,6 +27,7 @@ export function ProductCatalog({
   adminMode = false,
   onEditSection,
 }: ProductCatalogProps) {
+  const canEdit = adminMode && Boolean(onEditSection)
   const [products, setProducts] = useState<Product[]>(productsOverride ?? DEFAULT_PRODUCTS)
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("Todos")
@@ -64,20 +65,28 @@ export function ProductCatalog({
     })
   }, [products, search, category])
 
+  function openCatalogEditor() {
+    onEditSection?.("catalogo")
+  }
+
+  function openProductsEditor() {
+    onEditSection?.("productos")
+  }
+
   return (
     <section id="catalogo" className="relative mx-auto max-w-7xl px-4 py-14 lg:px-8 lg:py-20">
-      {adminMode && onEditSection && (
+      {canEdit && (
         <div className="absolute right-4 top-6 z-20 flex gap-2">
           <button
             type="button"
-            onClick={() => onEditSection("catalogo")}
+            onClick={openCatalogEditor}
             className="rounded-lg border border-border bg-card/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm hover:bg-muted transition-colors"
           >
             Editar textos
           </button>
           <button
             type="button"
-            onClick={() => onEditSection("productos")}
+            onClick={openProductsEditor}
             className="rounded-lg border border-border bg-card/90 px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm hover:bg-muted transition-colors"
           >
             Editar productos
@@ -86,12 +95,33 @@ export function ProductCatalog({
       )}
 
       <div className="mb-8 rounded-3xl border border-[#C2410C]/16 bg-[#FFF7ED] px-6 py-8 text-center shadow-[0_26px_48px_-36px_rgba(154,52,18,0.85)]">
-        <h2 className="text-balance text-3xl font-serif text-[#7C2D12] lg:text-4xl">
-          {heading}
-        </h2>
-        <p className="mt-3 leading-relaxed text-[#7C2D12]/80">
-          {description}
-        </p>
+        {canEdit ? (
+          <button
+            type="button"
+            onClick={openCatalogEditor}
+            className="text-balance text-3xl font-serif text-[#7C2D12] hover:opacity-90 lg:text-4xl"
+          >
+            {heading}
+          </button>
+        ) : (
+          <h2 className="text-balance text-3xl font-serif text-[#7C2D12] lg:text-4xl">
+            {heading}
+          </h2>
+        )}
+
+        {canEdit ? (
+          <button
+            type="button"
+            onClick={openCatalogEditor}
+            className="mt-3 leading-relaxed text-[#7C2D12]/80 hover:opacity-90"
+          >
+            {description}
+          </button>
+        ) : (
+          <p className="mt-3 leading-relaxed text-[#7C2D12]/80">
+            {description}
+          </p>
+        )}
       </div>
 
       <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-[#C2410C]/16 bg-white/80 px-4 py-4 shadow-[0_16px_36px_-30px_rgba(154,52,18,0.85)] md:flex-row md:items-center md:justify-between">
@@ -104,6 +134,15 @@ export function ProductCatalog({
           <PackageOpen className="mb-4 h-16 w-16 opacity-50" />
           <p className="text-lg font-semibold">No se encontraron productos</p>
           <p className="mt-1 text-sm">Intenta con otra busqueda o categoria.</p>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={openProductsEditor}
+              className="mt-4 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm hover:bg-muted transition-colors"
+            >
+              Editar productos
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -113,6 +152,8 @@ export function ProductCatalog({
               product={product}
               whatsappNumber={whatsappNumber}
               whatsappMessageTemplate={productInquiryTemplate}
+              adminMode={adminMode}
+              onEditProducts={canEdit ? openProductsEditor : undefined}
             />
           ))}
         </div>
